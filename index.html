@@ -194,8 +194,9 @@
     transition: all 0.3s cubic-bezier(.25,.8,.25,1);
     border: none;
   }
-  #addNew:hover {
-    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  #addNew:hover, .card:hover {
+    box-shadow: 0 8px 14px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
   }
   #toast {
     position: fixed;
@@ -228,7 +229,8 @@
 
 <div class="container">
 <template>
-  <div class="card shadow-1 flex" draggable="true">
+  <!-- <div class="card shadow-1 flex" draggable="true"> -->
+  <div class="card shadow-1 flex" onclick="addOne(event)">
     <div>
       <img class="feature-image" src="">
       <p contenteditable class="image hide"></p>
@@ -248,7 +250,7 @@
       </div>
       <button class="edit-visible" onclick="showEdit(event)">Edit</button>
     </div>
-    <button class="" onclick="save">+1</button>
+    <button class="" id="counter" onclick="addOne(event)">+1</button>
     <button class="edit hide" onclick="save(event)">Save</button>
     <button class="edit hide" onclick="removeThis(event)">Delete</button>
     <div class="table edit hide options">
@@ -258,7 +260,7 @@
       </div>
       <input type="color" value="#ffffff" onchange="updateColour(event)">
     </div>
-  </div>
+  <!-- </div> -->
 </template>
 </div>
 
@@ -300,6 +302,8 @@
           temp.content.querySelector("p").textContent = newData.featureImgSrc;
           temp.content.querySelector("h1").textContent = newData.title;
           temp.content.querySelector("h2").textContent = newData.description;
+
+          temp.content.querySelector("#counter").textContent = newData.buttonText;
 
           temp.content.querySelectorAll(".kpi")[0].textContent = newData.primaryKpi;
           temp.content.querySelectorAll(".metric")[0].textContent = newData.primaryMetric;
@@ -447,6 +451,31 @@
       console.error("Error removing document: ", error);
       toggleToast("Sorry, something went wrong while removing this initiative. Please try again.");
     });
+  }
+
+  function addOne(event) {
+    var item = event.target.parentNode.id;
+    var initiativeRef = firestore.collection(teamName).doc(item);
+    var tempTitleRef = document.querySelector('#'+item);
+
+    // document.querySelector('body').removeChild(document.querySelector('#'+item));
+
+    // event.target.parentNode.querySelector('#counter').innerHTML = parseInt(event.target.parentNode.querySelector('#counter').innerHTML) + 1;
+    // event.target.parentNode.querySelector('#counter').innerHTML = 0;
+    event.target.parentNode.querySelector('#counter').innerHTML++;
+
+    return initiativeRef.update({
+      buttonText: tempTitleRef.querySelector("#counter").textContent
+    })
+            .then(function() {
+              console.log("Document successfully updated!");
+              toggleToast("Save successful!");
+            })
+            .catch(function(error) {
+              // The document probably doesn't exist.
+              console.error("Error updating document: ", error);
+              toggleToast("Sorry, something went wrong saving. Please try again.");
+            });
   }
 
   function addNew() {
